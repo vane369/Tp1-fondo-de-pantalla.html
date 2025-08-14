@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Velador – Encender / Apagar</title>
+  <style>
+    :root{
+      --bg: #0f172a;           /* fondo oscuro */
+      --card: #111827;         /* tarjeta */
+      --accent: #38bdf8;       /* acento */
+      --text: #e5e7eb;         /* texto */
+      --muted: #94a3b8;        /* texto secundario */
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+    } 
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      background: radial-gradient(1200px 800px at 50% 20%, #0b1324 0%, var(--bg) 60%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    } 
+
+    .app{
+      width: min(720px, 100%);
+      background: linear-gradient(180deg, #0b1222 0%, var(--card) 100%);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: clamp(16px, 3vw, 28px);
+    } 
+
+    .header{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    } 
+
+    .title{
+      font-size: clamp(20px, 3.4vw, 28px);
+      font-weight: 700;
+      letter-spacing: .3px;
+    } 
+
+    .subtitle{
+      color: var(--muted);
+      font-size: clamp(12px, 2.2vw, 14px);
+    } 
+
+    /* Lámpara */
+    .scene{
+      position: relative;
+      aspect-ratio: 16/9;
+      width: 100%;
+      border-radius: 20px;
+      background: radial-gradient(800px 300px at 50% 35%, rgba(255,242,200,.08), transparent 60%),
+                  radial-gradient(300px 150px at 50% 35%, rgba(255,255,255,.04), transparent 70%);
+      overflow: hidden;
+      display: grid;
+      place-items: end center;
+      border: 1px solid rgba(255,255,255,.06);
+    } 
+
+    .lamp{
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    } 
+
+    /* Haz de luz */
+    .beam{
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 62%;
+      height: 58%;
+      background: radial-gradient(closest-side, rgba(255,239,185,.75), rgba(255,239,185,.35) 35%, rgba(255,239,185,0) 70%);
+      filter: blur(2px) saturate(110%);
+      opacity: 0;               /* apagado por defecto */
+      transition: opacity .35s ease;
+    } 
+
+    /* Pantalla del velador */
+    .shade{
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 180px; height: 110px;
+      background: linear-gradient(180deg, #2b344a 0%, #1f2a44 100%);
+      border-radius: 16px 16px 36px 36px / 16px 16px 60px 60px;
+      box-shadow: inset 0 -10px 30px rgba(0,0,0,.45), 0 10px 30px rgba(0,0,0,.3);
+    } 
+
+    /* Bombilla */
+    .bulb{
+      position: absolute;
+      top: calc(18% + 80px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px; height: 44px;
+      background: radial-gradient(circle at 35% 35%, #fffbe6, #ffe7a8 55%, #ffd271 70%, #b38b3a 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(0,0,0,.2);
+      filter: brightness(.55);
+      transition: filter .25s ease, box-shadow .25s ease;
+    } 
+
+    /* Pie y base */
+    .stem{
+      position: absolute;
+      top: calc(18% + 120px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 10px; height: 140px;
+      background: linear-gradient(#8b96a7, #667085);
+      border-radius: 6px;
+      box-shadow: inset 0 0 6px rgba(0,0,0,.35);
+    } 
+
+    .base{
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 240px; height: 22px;
+      background: linear-gradient(180deg, #8b96a7 0%, #616b7a 100%);
+      border-radius: 50px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    } 
+
+    /* Controles */
+    .controls{
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 16px;
+    } 
+
+    button{
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.12);
+      background: #0b1222;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform .1s ease, background .2s ease, border-color .2s ease;
+    }
+    button:hover{ transform: translateY(-1px); }
+    button:active{ transform: translateY(0); } 
+
+    .on-btn{ background: #1b2a3f; }
+    .off-btn{ background: #241b1b; }
+    .on-btn[aria-pressed="true"]{ outline: 2px solid #22d3ee; }
+    .off-btn[aria-pressed="true"]{ outline: 2px solid #fca5a5; } 
+
+    .status{ color: var(--muted); font-size: 14px; } 
+
+    /* Estado encendido */
+    .is-on .beam{ opacity: 1; }
+    .is-on .bulb{
+      filter: brightness(1.3);
+      box-shadow: 0 0 25px 8px rgba(255,227,150,.55), 0 0 120px 50px rgba(255,227,150,.25);
+    } 
+
+    /* Responsivo */
+    @media (max-width: 520px){
+      .scene{ aspect-ratio: 4/3; }
+      .base{ width: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" aria-labelledby="app-title">
+    <div class="header">
+      <div>
+        <h1 id="app-title" class="title">Velador</h1>
+        <p class="subtitle">Maqueta interactiva con dos botones: <em>Encender</em> y <em>Apagar</em>.</p>
+      </div>
+    </div> 
+
+    <!-- Escena del velador -->
+    <section class="scene" aria-label="Velador de mesa" aria-live="polite">
+      <div id="lamp" class="lamp" data-state="off">
+        <div class="beam" aria-hidden="true"></div>
+        <div class="shade" aria-hidden="true"></div>
+        <div class="bulb" role="img" aria-label="Bombilla"></div>
+        <div class="stem" aria-hidden="true"></div>
+        <div class="base" aria-hidden="true"></div>
+      </div>
+    </section> 
+
+    <!-- Controles accesibles -->
+    <div class="controls" role="group" aria-label="Controles del velador">
+      <button id="btnOn" class="on-btn" aria-pressed="false" aria-controls="lamp">
+        🔆 Encender
+      </button>
+      <button id="btnOff" class="off-btn" aria-pressed="true" aria-controls="lamp">
+        🌑 Apagar
+      </button>
+      <span id="status" class="status" aria-live="polite">Estado: apagado</span>
+    </div>
+  </main> 
+
+  <script>
+    const lamp = document.getElementById('lamp');
+    const btnOn = document.getElementById('btnOn');
+    const btnOff = document.getElementById('btnOff');
+    const status = document.getElementById('status'); 
+
+    function setLamp(on){
+      lamp.classList.toggle('is-on', on);
+      lamp.dataset.state = on ? 'on' : 'off';
+      btnOn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btnOff.setAttribute('aria-pressed', on ? 'false' : 'true');
+      status.textContent = 'Estado: ' + (on ? 'encendido' : 'apagado');
+    } 
+
+    btnOn.addEventListener('click', () => setLamp(true));
+    btnOff.addEventListener('click', () => setLamp(false)); 
+
+    // Atajos de teclado: E para encender, A para apagar, Barra espaciadora para alternar
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+      if (e.key.toLowerCase() === 'e') setLamp(true);
+      if (e.key.toLowerCase() === 'a') setLamp(false);
+      if (e.code === 'Space') { e.preventDefault(); setLamp(lamp.dataset.state !== 'on'); }
+    });
+  </script>
+</body>
+</html>
